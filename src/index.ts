@@ -247,19 +247,14 @@ class InsomniaImporter implements Paw.Importer {
       if (requestRefId && requestBase64) {
         const requestRefPath = decode(requestBase64[1]);
         const pawRequest = this.requests[requestRefId];
-        switch (pawRequest.getHeaderByName("Content-Type")) {
-          case "application/xml": {
-            dynamicValues[offset - examined] = makeXPathExtensionsDv(pawRequest.id, requestRefPath, this.depthRequestPath, this.showXPathInName);
-            break;
-          }
-          case "application/json": {
-            dynamicValues[offset - examined] = makeJsonPathExtensionDv(pawRequest.id, requestRefPath);
-            break;
-          }
-          default:
-            break;
-        }
+        const contentType = pawRequest.getHeaderByName("Content-Type") as string;
 
+        if (contentType) {
+          if (contentType.indexOf("xml") > 0)
+            dynamicValues[offset - examined] = makeXPathExtensionsDv(pawRequest.id, requestRefPath, this.depthRequestPath, this.showXPathInName);
+          else if (contentType.indexOf("json") > 0)
+            dynamicValues[offset - examined] = makeJsonPathExtensionDv(pawRequest.id, requestRefPath);
+        }
       }
 
       examined += match.length;
