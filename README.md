@@ -54,4 +54,4 @@ Feel free to create Issue for bugs/suggestions.
 
 ### Manual Installation
 - Clone this repo
-- `run npm paw`
+- run `npm paw`
