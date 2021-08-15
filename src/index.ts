@@ -231,7 +231,7 @@ class InsomniaImporter implements Paw.Importer {
   }
 
   private convertToDynamicString(sourceBody: string): DynamicString | string {
-    const insomniaEvalRegExp = /{% response 'body'(.+?)%}/g;
+    const insomniaEvalRegExp = /{% response 'body', '(.+?)', '(.+?)', .+%}/g;
 
     if (!insomniaEvalRegExp.test(sourceBody))
       return sourceBody;
@@ -239,11 +239,10 @@ class InsomniaImporter implements Paw.Importer {
     const dynamicValues: Record<number, DynamicValue> = {};
 
     let examined = 0;
-    const body = sourceBody.replace(insomniaEvalRegExp, (match, _, offset) => {
+    const body = sourceBody.replace(insomniaEvalRegExp, (match, p1, p2, offset) => {
       const base64RegExp = /b64::(.+?)::46b/g;
-      const params = match.split("', '");
-      const requestRefId = params[1];
-      const requestBase64 = base64RegExp.exec(params[2]);
+      const requestRefId = p1;
+      const requestBase64 = base64RegExp.exec(p2);
 
       if (requestRefId && requestBase64) {
         const requestRefPath = decode(requestBase64[1]);
