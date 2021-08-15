@@ -39,10 +39,6 @@ PAW doesn't support XPath for XML
 But you can relax, the importer will convert it to my extension so that they work, you just need to install it via the [LINK](https://www.github.com/Drenalol/Paw-XPath2DynamicValue)
 
 ### ** Environments
-Insomnia has a "Base Environment" that is available for all environments, but the Paw does not have such a thing.
-
-Importer will convert it like normal environment.
-
 Mapping:
 
 `String => String`

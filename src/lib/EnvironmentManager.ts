@@ -1,15 +1,14 @@
 import Paw from '../types-paw-api/paw';
-import {makeEnvDv} from "./dynamicStringUtils";
 
 class EnvironmentManager {
-  name: string
-  context: Paw.Context
-  environmentDomain: Paw.EnvironmentDomain | null
+  name: string;
+  context: Paw.Context;
+  environmentDomain: Paw.EnvironmentDomain | null;
 
-  constructor(context: Paw.Context) {
-    this.name = 'Insomnia Environment'
-    this.context = context
-    this.environmentDomain = null
+  constructor(context: Paw.Context, name: string) {
+    this.name = name;
+    this.context = context;
+    this.environmentDomain = null;
   }
 
   private getEnvironmentDomain(): Paw.EnvironmentDomain {
@@ -44,9 +43,8 @@ class EnvironmentManager {
     return variable;
   }
 
-  public getDynamicValue(variableName: string): DynamicValue {
-    const variable = this.getOrCreateEnvironmentVariable(variableName)
-    return makeEnvDv(variable.id)
+  public getEnvironmentVariable(name: string): Paw.EnvironmentVariable | null {
+    return this.getEnvironmentDomain().getVariableByName(name);
   }
 
 }

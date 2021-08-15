@@ -3,38 +3,37 @@
 /* eslint-disable no-param-reassign */
 import Paw from '../types-paw-api/paw'
 import {convertAuthenticationToRecords, getInsomniaAuthParam} from './insomniaUtils'
-import {makeDs, makeDv} from './dynamicStringUtils'
 import EnvironmentManager from './EnvironmentManager'
 import convertEnvString from './convertEnvString'
 import Insomnia from "../types-paw-api/insomnia";
 
-const getDynamicInsomniaAuthParam = (authentication: Record<string, string>, key: string, environmentManager: EnvironmentManager): string | DynamicString | null => {
+const getDynamicInsomniaAuthParam = (authentication: Record<string, string>, key: string, baseEnvironmentManager: EnvironmentManager, environmentManager: EnvironmentManager): string | DynamicString | null => {
   const val = getInsomniaAuthParam(authentication, key)
   if (!val) {
     return null
   }
-  return convertEnvString(val, environmentManager)
+  return convertEnvString(val, baseEnvironmentManager, environmentManager)
 }
 
-const convertAuthBearer = (authentication: Record<string, string>, pawRequest: Paw.Request, environmentManager: EnvironmentManager): void => {
-  const token = getDynamicInsomniaAuthParam(authentication, 'token', environmentManager);
+const convertAuthBearer = (authentication: Record<string, string>, pawRequest: Paw.Request, baseEnvironmentManager: EnvironmentManager,  environmentManager: EnvironmentManager): void => {
+  const token = getDynamicInsomniaAuthParam(authentication, 'token', baseEnvironmentManager, environmentManager);
   pawRequest.addHeader('Authorization', `Bearer ${(token || '')}`);
 }
 
-const convertAuthBasic = (authentication: Record<string, string>, pawRequest: Paw.Request, environmentManager: EnvironmentManager): void => {
-  const username = getDynamicInsomniaAuthParam(authentication, 'username', environmentManager);
-  const password = getDynamicInsomniaAuthParam(authentication, 'password', environmentManager);
+const convertAuthBasic = (authentication: Record<string, string>, pawRequest: Paw.Request, baseEnvironmentManager: EnvironmentManager, environmentManager: EnvironmentManager): void => {
+  const username = getDynamicInsomniaAuthParam(authentication, 'username', baseEnvironmentManager, environmentManager);
+  const password = getDynamicInsomniaAuthParam(authentication, 'password', baseEnvironmentManager, environmentManager);
   pawRequest.httpBasicAuth = {
     username,
     password,
   }
 }
 
-const convertAuthOAuth1 = (authentication: Record<string, string>, pawRequest: Paw.Request, environmentManager: EnvironmentManager): void => {
-  const consumerKey = getDynamicInsomniaAuthParam(authentication, 'consumerKey', environmentManager);
-  const consumerSecret = getDynamicInsomniaAuthParam(authentication, 'consumerSecret', environmentManager);
-  const token = getDynamicInsomniaAuthParam(authentication, 'tokenKey', environmentManager);
-  const tokenSecret = getDynamicInsomniaAuthParam(authentication, 'tokenSecret', environmentManager);
+const convertAuthOAuth1 = (authentication: Record<string, string>, pawRequest: Paw.Request, baseEnvironmentManager: EnvironmentManager, environmentManager: EnvironmentManager): void => {
+  const consumerKey = getDynamicInsomniaAuthParam(authentication, 'consumerKey', baseEnvironmentManager, environmentManager);
+  const consumerSecret = getDynamicInsomniaAuthParam(authentication, 'consumerSecret', baseEnvironmentManager, environmentManager);
+  const token = getDynamicInsomniaAuthParam(authentication, 'tokenKey', baseEnvironmentManager, environmentManager);
+  const tokenSecret = getDynamicInsomniaAuthParam(authentication, 'tokenSecret', baseEnvironmentManager, environmentManager);
   const signatureMethod = getInsomniaAuthParam(authentication, 'signatureMethod');
 
   pawRequest.oauth1 = {
@@ -52,13 +51,13 @@ const convertAuthOAuth1 = (authentication: Record<string, string>, pawRequest: P
   }
 }
 
-const convertAuthOAuth2 = (authentication: Record<string, string>, pawRequest: Paw.Request, environmentManager: EnvironmentManager): void => {
-  const grantType = getDynamicInsomniaAuthParam(authentication, 'grantType', environmentManager);
-  const authorizationUrl = getDynamicInsomniaAuthParam(authentication, 'authorizationUrl', environmentManager);
-  const accessTokenUrl = getDynamicInsomniaAuthParam(authentication, 'accessTokenUrl', environmentManager);
-  const clientId = getDynamicInsomniaAuthParam(authentication, 'clientId', environmentManager);
-  const clientSecret = getDynamicInsomniaAuthParam(authentication, 'clientSecret', environmentManager);
-  const redirectUrl = getDynamicInsomniaAuthParam(authentication, 'redirectUrl', environmentManager);
+const convertAuthOAuth2 = (authentication: Record<string, string>, pawRequest: Paw.Request, baseEnvironmentManager: EnvironmentManager, environmentManager: EnvironmentManager): void => {
+  const grantType = getDynamicInsomniaAuthParam(authentication, 'grantType', baseEnvironmentManager, environmentManager);
+  const authorizationUrl = getDynamicInsomniaAuthParam(authentication, 'authorizationUrl', baseEnvironmentManager, environmentManager);
+  const accessTokenUrl = getDynamicInsomniaAuthParam(authentication, 'accessTokenUrl', baseEnvironmentManager, environmentManager);
+  const clientId = getDynamicInsomniaAuthParam(authentication, 'clientId', baseEnvironmentManager, environmentManager);
+  const clientSecret = getDynamicInsomniaAuthParam(authentication, 'clientSecret', baseEnvironmentManager, environmentManager);
+  const redirectUrl = getDynamicInsomniaAuthParam(authentication, 'redirectUrl', baseEnvironmentManager, environmentManager);
 
   pawRequest.oauth2 = {
     client_id: clientId,
@@ -74,7 +73,7 @@ const convertAuthOAuth2 = (authentication: Record<string, string>, pawRequest: P
   }
 }
 
-const convertAuth = (authentication: Insomnia.Authentication, pawRequest: Paw.Request, environmentManager: EnvironmentManager): void => {
+const convertAuth = (authentication: Insomnia.Authentication, pawRequest: Paw.Request, baseEnvironmentManager: EnvironmentManager, environmentManager: EnvironmentManager): void => {
   if (!authentication) {
     return
   }
@@ -83,16 +82,16 @@ const convertAuth = (authentication: Insomnia.Authentication, pawRequest: Paw.Re
 
   switch (authentication.type) {
     case 'bearer':
-      convertAuthBearer(records, pawRequest, environmentManager)
+      convertAuthBearer(records, pawRequest, baseEnvironmentManager, environmentManager)
       break;
     case 'basic':
-      convertAuthBasic(records, pawRequest, environmentManager)
+      convertAuthBasic(records, pawRequest, baseEnvironmentManager, environmentManager)
       break;
     case 'oauth1':
-      convertAuthOAuth1(records, pawRequest, environmentManager)
+      convertAuthOAuth1(records, pawRequest, baseEnvironmentManager, environmentManager)
       break;
     case 'oauth2':
-      convertAuthOAuth2(records, pawRequest, environmentManager)
+      convertAuthOAuth2(records, pawRequest, baseEnvironmentManager ,environmentManager)
       break;
     default:
       break;

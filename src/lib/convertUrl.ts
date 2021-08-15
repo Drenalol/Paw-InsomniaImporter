@@ -3,12 +3,12 @@ import EnvironmentManager from './EnvironmentManager';
 import convertEnvString from './convertEnvString';
 
 
-const convertUrl = (url: string, environmentManager: EnvironmentManager): string | DynamicString | null => {
+const convertUrl = (url: string, baseEnvironmentManager: EnvironmentManager, environmentManager: EnvironmentManager): string | DynamicString | null => {
   if (!url) {
     return null;
   }
 
-  return convertEnvString(url, environmentManager)
+  return convertEnvString(url, baseEnvironmentManager, environmentManager)
 }
 
 export default convertUrl

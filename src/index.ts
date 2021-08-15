@@ -101,26 +101,35 @@ class InsomniaImporter implements Paw.Importer {
     }
 
     // Environment
-    const environmentManager = new EnvironmentManager(this.context);
+    const baseEnvironmentManager = new EnvironmentManager(this.context, "Insomnia Base Environment");
+    const environmentManager = new EnvironmentManager(this.context, "Insomnia Environments");
 
     if (this.resources.environment) {
       Object
         .keys(this.resources.environment)
         .forEach(environmentKey => {
           const insomniaEnv = this.resources.environment[environmentKey];
-          const env = environmentManager.getOrCreateEnvironment(insomniaEnv.name);
+          let envManager: EnvironmentManager;
+
+          if (insomniaEnv.name === "Base Environment") {
+            envManager = baseEnvironmentManager;
+          } else {
+            envManager = environmentManager;
+          }
+
+          const env = envManager.getOrCreateEnvironment(insomniaEnv.name);
           const insomniaEnvVars = insomniaEnv.data;
 
           Object
             .keys(insomniaEnvVars)
             .forEach(variableKey => {
               const environmentVariable = insomniaEnvVars[variableKey];
-              environmentManager.getOrCreateEnvironmentVariable(variableKey);
+              envManager.getOrCreateEnvironmentVariable(variableKey);
 
               if (typeof environmentVariable === 'string') {
                 env.setVariablesValues({[variableKey]: environmentVariable});
               } else {
-                env.setVariablesValues({[variableKey]: makeDs(makeJsonDv(environmentVariable))})
+                env.setVariablesValues({[variableKey]: makeDs(makeJsonDv(environmentVariable))});
               }
             });
         });
@@ -135,7 +144,7 @@ class InsomniaImporter implements Paw.Importer {
         .keys(this.resources.request)
         .forEach(requestKey => {
           const insomniaRequest = this.resources.request[requestKey];
-          const request = this.createRequest(insomniaRequest, environmentManager);
+          const request = this.createRequest(insomniaRequest, baseEnvironmentManager, environmentManager);
 
           if (insomniaRequest.parentId) {
             const parent = this.requestGroups[insomniaRequest.parentId];
@@ -196,8 +205,8 @@ class InsomniaImporter implements Paw.Importer {
     return child;
   }
 
-  private createRequest(resource: Resource, environmentManager: EnvironmentManager): Paw.Request {
-    const url = convertUrl(resource.url, environmentManager);
+  private createRequest(resource: Resource, baseEnvironmentManager: EnvironmentManager, environmentManager: EnvironmentManager): Paw.Request {
+    const url = convertUrl(resource.url, baseEnvironmentManager, environmentManager);
     const request = this.context.createRequest(resource.name, resource.method, url, resource.description);
 
     if (resource.body && ("mimeType" in resource.body)) {
@@ -213,15 +222,15 @@ class InsomniaImporter implements Paw.Importer {
     }
 
     if (resource.headers) {
-      convertParameters(resource.headers, request, environmentManager, true);
+      convertParameters(resource.headers, request, baseEnvironmentManager, environmentManager, true);
     }
 
     if (resource.parameters) {
-      convertParameters(resource.parameters, request, environmentManager);
+      convertParameters(resource.parameters, request, baseEnvironmentManager, environmentManager);
     }
 
     if (resource.authentication && "type" in resource.authentication) {
-      convertAuth(resource.authentication, request, environmentManager);
+      convertAuth(resource.authentication, request, baseEnvironmentManager, environmentManager);
     }
 
     request.followRedirects = true;

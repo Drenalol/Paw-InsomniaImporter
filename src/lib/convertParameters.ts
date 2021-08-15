@@ -9,10 +9,11 @@ const convertParameter = (
   header: Insomnia.Parameter,
   request: Paw.Request,
   isHeaders: boolean,
+  baseEnvironmentManager: EnvironmentManager,
   environmentManager: EnvironmentManager
 ): Paw.KeyValue => {
-  const headerName = convertEnvString((header.name || ''), environmentManager)
-  let headerValue = convertEnvString((header.value || ''), environmentManager)
+  const headerName = convertEnvString((header.name || ''), baseEnvironmentManager, environmentManager)
+  let headerValue = convertEnvString((header.value || ''), baseEnvironmentManager, environmentManager)
 
   const variable = request.addVariable(headerName as string, headerValue, '');
   headerValue = makeDs(makeRequestDv(variable.id));
@@ -27,6 +28,7 @@ const convertParameter = (
 const convertParameters = (
   headers: Insomnia.Parameter[],
   pawRequest: Paw.Request,
+  baseEnvironmentManager: EnvironmentManager,
   environmentManager: EnvironmentManager,
   isHeaders = false
 ): void => {
@@ -34,7 +36,7 @@ const convertParameters = (
     return;
   }
   headers.forEach((header) => {
-    convertParameter(header, pawRequest, isHeaders, environmentManager);
+    convertParameter(header, pawRequest, isHeaders, baseEnvironmentManager, environmentManager);
   })
 }
 
